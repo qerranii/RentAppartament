@@ -1,4 +1,3 @@
-"""Декоратор аутентификации для FastAPI эндпоинтов."""
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,12 +15,7 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Получить текущего авторизованного пользователя.
-    
-    Используется как Depends(get_current_user) в защищенных эндпоинтах.
-    Извлекает токен из header "Authorization: Bearer <token>"
-    и возвращает объект User если токен валиден.
-    
+
     Args:
         credentials: HTTP credentials из Authorization header
         db: Database session

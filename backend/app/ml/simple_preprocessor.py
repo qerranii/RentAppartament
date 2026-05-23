@@ -6,8 +6,7 @@ from typing import Dict, Any
 
 def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.DataFrame:
     """
-    Convert 10 input fields to 39 model features using model's helper functions.
-    
+
     Input fields:
     - region: str
     - address: str  
@@ -24,7 +23,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
     - pandas.DataFrame with 39 columns matching model's cb_features
     """
     
-    # Extract model components
     cb_features = model_dict.get('cb_features') or model_dict.get('selected_features') or []
     helpers = {
         'extract_city': model_dict.get('extract_city'),
@@ -37,7 +35,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
     }
     russian_stopwords = model_dict.get('russian_stopwords', set())
     
-    # Parse raw 10-field inputs
     region = str(data.get('region', '') or '')
     address = str(data.get('address', '') or '')
     square = float(data.get('square', 0.0))
@@ -56,7 +53,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
     time_type = str(data.get('time_type', 'walk') or 'walk')
     description = str(data.get('description', '') or '')
     
-    # Build feature dict for all 39 features
     features = {}
     
     for fname in cb_features:
@@ -112,7 +108,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
         elif fname == 'metro':
             features['metro'] = metro
         elif fname == 'street_type':
-            # Use helper to extract street type from address
             if helpers['extract_street_type']:
                 try:
                     features['street_type'] = helpers['extract_street_type'](address)
@@ -130,7 +125,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
             else:
                 features['description_clean'] = description
         elif fname == 'floor_category':
-            # Categorize floor based on max_floor
             if floor <= 3:
                 features['floor_category'] = 'low'
             elif floor <= 7:
@@ -138,7 +132,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
             else:
                 features['floor_category'] = 'high'
         elif fname == 'building_height':
-            # Categorize building height based on max_floor
             if max_floor <= 5:
                 features['building_height'] = 'low_rise'
             elif max_floor <= 12:
@@ -158,7 +151,6 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
             else:
                 features['size_category'] = 'huge'
         elif fname == 'metro_accessibility':
-            # Categorize metro accessibility based on time
             if time_to_metro <= 10:
                 features['metro_accessibility'] = 'close'
             elif time_to_metro <= 30:
@@ -166,14 +158,11 @@ def preprocess_input(data: Dict[str, Any], model_dict: Dict[str, Any]) -> pd.Dat
             else:
                 features['metro_accessibility'] = 'far'
         else:
-            # All remaining boolean features default to 0
             features[fname] = 0
     
-    # Create DataFrame with all features in correct order
     df = pd.DataFrame([{k: features.get(k, 0) for k in cb_features}])
     
-    # Ensure correct dtypes for categorical columns
-    cat_cols = ['region', 'city', 'metro', 'street_type', 'description_clean', 
+    cat_cols = ['region', 'city', 'metro', 'street_type', 'description_clean',
                 'floor_category', 'building_height', 'size_category', 'metro_accessibility']
     for col in cat_cols:
         if col in df.columns:

@@ -1,4 +1,3 @@
-"""Конфигурация логирования приложения."""
 import logging
 import sys
 from app.core.config import settings

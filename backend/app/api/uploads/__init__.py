@@ -1,4 +1,3 @@
-"""Upload API endpoints."""
 import uuid
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
@@ -21,11 +20,9 @@ async def upload_image(
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Upload image for prediction."""
     try:
         image_service = ImageService(db)
         
-        # Generate unique filename
         file_ext = Path(file.filename).suffix.lower()
         unique_name = f"{uuid.uuid4()}{file_ext}"
         
@@ -34,15 +31,12 @@ async def upload_image(
         
         file_path = str(upload_path / unique_name)
         
-        # Save file
         contents = await file.read()
         with open(file_path, 'wb') as f:
             f.write(contents)
         
-        # Process image
         await image_service.process_image(file_path)
         
-        # Store in database
         image = await image_service.upload_image(
             prediction_id=prediction_id,
             file_path=file_path,
@@ -63,7 +57,6 @@ async def delete_image(
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Delete image."""
     try:
         image_service = ImageService(db)
         await image_service.delete_image(image_id)

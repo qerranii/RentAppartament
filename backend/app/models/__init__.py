@@ -1,4 +1,3 @@
-"""ORM модели для базы данных (SQLAlchemy)."""
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import String, Float, Integer, Text, ForeignKey, JSON, Index
@@ -9,9 +8,7 @@ from app.models.database import BaseModel
 class User(BaseModel):
     """
     Модель пользователя.
-    
-    Хранит информацию об аккаунте пользователя и связь с его прогнозами.
-    Индекс на email для быстрого поиска при логине.
+
     """
     __tablename__ = "users"
     
@@ -34,9 +31,7 @@ class User(BaseModel):
 class Prediction(BaseModel):
     """
     Модель прогноза цены на аренду.
-    
-    Хранит параметры объекта и результат ML предсказания.
-    Связь с User (владелец), Images (фото), PredictionLog (логи вывода).
+
     """
     __tablename__ = "predictions"
     
@@ -95,9 +90,6 @@ class Prediction(BaseModel):
 class Image(BaseModel):
     """
     Модель изображения объекта.
-    
-    Хранит информацию о загруженных фото для прогноза.
-    Путь к файлу, размер, тип MIME.
     """
     __tablename__ = "images"
     
@@ -124,9 +116,7 @@ class Image(BaseModel):
 class PredictionLog(BaseModel):
     """
     Модель логов ML вывода.
-    
-    Сохраняет входные данные, результаты и время выполнения 
-    для отладки и аналитики.
+
     """
     __tablename__ = "prediction_logs"
     

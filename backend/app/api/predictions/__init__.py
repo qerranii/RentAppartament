@@ -1,4 +1,3 @@
-"""Эндпоинты управления прогнозами."""
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,10 +19,7 @@ async def create_prediction(
     current_user = Depends(get_current_user)
 ):
     """
-    Создание нового прогноза.
-    
-    Выполняет ML вывод на основе параметров недвижимости и сохраняет результат.
-    
+
     Args:
         prediction_data: Параметры объекта (комнаты, площадь, этаж и т.д.)
         db: Database session
@@ -55,11 +51,6 @@ async def list_predictions(
     current_user = Depends(get_current_user)
 ):
     """
-    Получение списка прогнозов пользователя.
-    
-    Возвращает пагинированный список всех прогнозов текущего пользователя,
-    отсортированные по дате создания (новые сверху).
-    
     Args:
         skip: Количество записей для пропуска (по умолчанию 0)
         limit: Количество записей для возврата (по умолчанию 20, максимум 100)
@@ -91,10 +82,7 @@ async def get_prediction(
     current_user = Depends(get_current_user)
 ):
     """
-    Получение деталей конкретного прогноза.
-    
-    Возвращает полную информацию о прогнозе включая изображения и логи вывода.
-    
+
     Args:
         prediction_id: ID прогноза
         db: Database session
@@ -124,10 +112,7 @@ async def delete_prediction(
     current_user = Depends(get_current_user)
 ):
     """
-    Удаление прогноза.
-    
-    Удаляет прогноз и все связанные изображения (cascade delete).
-    
+
     Args:
         prediction_id: ID прогноза для удаления
         db: Database session
@@ -155,11 +140,7 @@ async def get_analytics(
     current_user = Depends(get_current_user)
 ):
     """
-    Получение аналитики пользователя.
-    
-    Возвращает статистику всех прогнозов: средняя цена, медиана, 
-    распределение по районам, количество и т.д.
-    
+
     Args:
         db: Database session
         current_user: Текущий авторизованный пользователь

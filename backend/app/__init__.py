@@ -1,4 +1,3 @@
-"""Основное FastAPI приложение для платформы прогнозирования цен на аренду."""
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,11 +12,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Управление жизненным циклом приложения.
-    
-    Выполняет инициализацию при запуске и очистку при завершении.
-    """
+
     logger.info(f"Запуск {settings.APP_NAME} v{settings.VERSION}")
     logger.info(f"Режим debug: {settings.DEBUG}")
     
@@ -30,17 +25,14 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             logger.info(f"TABLES: {Base.metadata.tables.keys()}")
             await conn.run_sync(Base.metadata.create_all)
-            # Ensure predictions table has new location columns; create_all does not ALTER existing tables.
             try:
                 from sqlalchemy import text
-                # Check and add columns if missing
                 required_columns = {
                     'region': 'VARCHAR(100)',
                     'city': 'VARCHAR(100)',
                     'metro': 'VARCHAR(100)',
                     'street_type': 'VARCHAR(50)'
                 }
-                # Query existing columns
                 res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name = 'predictions'"))
                 existing = {row[0] for row in res.fetchall()}
                 for col, col_type in required_columns.items():
@@ -85,7 +77,6 @@ app.add_middleware(
 
 @app.exception_handler(AppException)
 async def app_exception_handler(request, exc: AppException):
-    """Обработчик пользовательских исключений приложения."""
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.message}
@@ -94,11 +85,7 @@ async def app_exception_handler(request, exc: AppException):
 
 @app.get("/health")
 async def health_check():
-    """
-    Проверка здоровья приложения.
-    
-    Используется docker-compose для health checks и load balancer.
-    """
+
     return {
         "status": "healthy",
         "app": settings.APP_NAME,
@@ -108,9 +95,7 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    """
-    Root endpoint - информация о приложении.
-    """
+
     return {
         "message": f"Добро пожаловать в {settings.APP_NAME}",
         "version": settings.VERSION,

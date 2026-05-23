@@ -1,4 +1,3 @@
-"""Validators for request data."""
 import re
 
 

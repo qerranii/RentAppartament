@@ -1,4 +1,3 @@
-"""Конфигурация БД и базовая модель для всех ORM моделей."""
 from typing import AsyncGenerator
 from datetime import datetime
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -49,11 +48,7 @@ class BaseModel(Base):
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
-    Получение DB сессии для dependency injection.
-    
-    Используется как Depends(get_db) в эндпоинтах.
-    Автоматически закрывает сессию после завершения запроса.
-    
+
     Yields:
         AsyncSession: Асинхронная сессия БД
     """

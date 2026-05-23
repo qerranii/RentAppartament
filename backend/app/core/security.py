@@ -19,10 +19,6 @@ class TokenData(BaseModel):
 
 def hash_password(password: str) -> str:
     """
-    Хеширование пароля с использованием bcrypt.
-    
-    Использует bcrypt с 12 раундами соления для максимальной безопасности.
-    
     Args:
         password: Пароль в открытом виде
     
@@ -34,10 +30,6 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Проверка пароля против его хеша.
-    
-    Использует bcrypt для безопасного сравнения.
-    
     Args:
         plain_password: Пароль в открытом виде
         hashed_password: Сохраненный хеш пароля
@@ -53,11 +45,6 @@ def create_access_token(
     expires_delta: Optional[timedelta] = None
 ) -> str:
     """
-    Создание JWT access токена.
-    
-    Access токен используется для аутентификации запросов к API.
-    Время жизни по умолчанию берется из конфига (ACCESS_TOKEN_EXPIRE_MINUTES).
-    
     Args:
         subject: ID пользователя для токена
         expires_delta: Опциональное время жизни токена
@@ -84,11 +71,6 @@ def create_access_token(
 
 def create_refresh_token(subject: str) -> str:
     """
-    Создание JWT refresh токена.
-    
-    Refresh токен используется для получения нового access токена
-    без повторного ввода пароля. Имеет длительное время жизни.
-    
     Args:
         subject: ID пользователя для токена
     
@@ -108,10 +90,6 @@ def create_refresh_token(subject: str) -> str:
 
 def verify_token(token: str) -> Optional[str]:
     """
-    Проверка и декодирование JWT токена.
-    
-    Проверяет подпись и время жизни токена. Возвращает ID пользователя.
-    
     Args:
         token: JWT токен для проверки
     

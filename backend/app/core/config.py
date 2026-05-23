@@ -1,4 +1,3 @@
-"""Конфигурация приложения из переменных окружения."""
 from typing import Set, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
@@ -7,9 +6,6 @@ from functools import lru_cache
 class Settings(BaseSettings):
     """
     Конфигурация приложения из переменных окружения.
-    
-    Использует Pydantic для валидации и .env файлов для значений.
-    Все значения типобезопасны и имеют значения по умолчанию.
     """
 
     model_config = SettingsConfigDict(
@@ -70,14 +66,6 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """
-    Получить кешированный экземпляр Settings.
-    
-    LRU cache предотвращает пересоздание объекта Settings при каждом обращении.
-    
-    Returns:
-        Settings: Глобальный объект конфигурации
-    """
     return Settings()
 
 

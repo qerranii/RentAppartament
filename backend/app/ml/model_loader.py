@@ -1,4 +1,3 @@
-"""ML Model Loader and inference utilities."""
 import joblib
 import numpy as np
 import pandas as pd
@@ -23,10 +22,7 @@ class ModelLoader:
                 model_path = Path(settings.MODEL_PATH)
                 if not model_path.exists():
                     raise FileNotFoundError(f"Model not found at {settings.MODEL_PATH}")
-                
-                # Some pickles/dill objects were created in Python2 environments and
-                # reference module '__builtin__' or other old names. Provide compatibility
-                # by aliasing to the Python 3 'builtins' module during load.
+
                 import sys
                 import builtins as _builtins
                 added_alias = False
@@ -39,7 +35,6 @@ class ModelLoader:
                         cls._model_path = model_path
                     except Exception as e_joblib:
                         logger.warning(f"joblib.load failed ({e_joblib}), trying dill.load fallback")
-                        # Try dill directly as fallback for objects serialized with dill/pickle
                         try:
                             import dill
                             with open(str(model_path), 'rb') as fh:
@@ -55,14 +50,11 @@ class ModelLoader:
                         except Exception:
                             pass
                 
-                # Normalize model dict keys - accept alternative keys produced by different pipelines
-                # Required: final_model
+
                 if 'final_model' not in cls._model_dict:
                     raise ValueError("Model missing 'final_model' key")
-                # selected_features may be named differently (e.g., 'selected_features' or 'cb_features')
                 if 'selected_features' not in cls._model_dict and 'cb_features' in cls._model_dict:
                     cls._model_dict['selected_features'] = cls._model_dict.get('cb_features')
-                # tfidf_vectorizer may be missing; provide dummy that returns zeros
                 if 'tfidf_vectorizer' not in cls._model_dict:
                     logger.warning("Model missing 'tfidf_vectorizer' - using dummy vectorizer that outputs zeros")
                     class DummyTfidf:
@@ -70,11 +62,9 @@ class ModelLoader:
                             import numpy as _np
                             return _np.zeros((len(texts), 30))
                     cls._model_dict['tfidf_vectorizer'] = DummyTfidf()
-                # target_encoder may be missing; provide empty encoders
                 if 'target_encoder' not in cls._model_dict:
                     logger.warning("Model missing 'target_encoder' - using empty encoders")
                     cls._model_dict['target_encoder'] = {}
-                # russian_stopwords may be missing; set empty set
                 if 'russian_stopwords' not in cls._model_dict:
                     logger.warning("Model missing 'russian_stopwords' - using empty set")
                     cls._model_dict['russian_stopwords'] = set()
@@ -83,7 +73,6 @@ class ModelLoader:
                     logger.warning("Model missing 'selected_features' - attempting to infer from cb_features or tfidf size")
                     cls._model_dict['selected_features'] = cls._model_dict.get('selected_features', [])
                 
-                # Log feature names and categorical feature info for debugging
                 logger.info(f"Model loaded successfully. Features: {len(cls._model_dict['selected_features'])}")
                 logger.info(f"Selected features sample: {cls._model_dict['selected_features'][:30]}")
                 cat_info = cls._model_dict.get('cat_features') or cls._model_dict.get('categorical_features')
@@ -96,15 +85,12 @@ class ModelLoader:
     
     @classmethod
     def get_model(cls) -> Dict[str, Any]:
-        """Get model (load if necessary)."""
         return cls.load_model()
 
 
 class FeaturePreprocessor:
-    """Preprocess raw input features for model inference."""
-    
+
     def __init__(self, model_dict: Dict[str, Any]):
-        """Initialize preprocessor with model components."""
         self.model_dict = model_dict
         self.selected_features = model_dict['selected_features']
         self.tfidf_vectorizer = model_dict['tfidf_vectorizer']
@@ -150,8 +136,7 @@ class FeaturePreprocessor:
         **kwargs,
     ) -> np.ndarray:
         """
-        Preprocess input features to match model's 76 features.
-        
+
         Args:
             square: Apartment area in square meters
             floor: Current floor
@@ -169,19 +154,15 @@ class FeaturePreprocessor:
             np.ndarray: Array of shape (1, 76) with all preprocessed features
         """
         
-        # Initialize feature dict
         feature_dict = {}
         
-        # Numerical features
         feature_dict['square'] = float(square)
         feature_dict['floor'] = int(floor)
         feature_dict['max_floor'] = int(max_floor)
         feature_dict['rooms_clean'] = int(rooms_clean)
         feature_dict['time_to_metro'] = int(time_to_metro)
         
-        # Derived numerical features
         feature_dict['floor_ratio'] = float(floor) / max(int(max_floor), 1)
-        # If caller provided precomputed rooms_per_square, prefer it; otherwise compute
         if rooms_per_square is not None:
             try:
                 feature_dict['rooms_per_square'] = float(rooms_per_square)
@@ -191,9 +172,8 @@ class FeaturePreprocessor:
             feature_dict['rooms_per_square'] = int(rooms_clean) / max(float(square), 1)
         feature_dict['square_x_rooms'] = float(square) * int(rooms_clean)
         feature_dict['log_square'] = np.log1p(float(square))
-        feature_dict['price_per_sqm_estimate'] = 0.0  # Will be filled from context if needed
+        feature_dict['price_per_sqm_estimate'] = 0.0
         
-        # Boolean features
         feature_dict['is_first_floor'] = int(is_first_floor)
         feature_dict['is_last_floor'] = int(is_last_floor)
         feature_dict['has_metro'] = int(has_metro)
@@ -214,7 +194,6 @@ class FeaturePreprocessor:
         feature_dict['has_security'] = int(has_security)
         feature_dict['is_new_building'] = int(is_new_building)
         
-        # Categorical features (for target encoding)
         categorical_features = {
             'region': region,
             'city': city,
@@ -222,11 +201,9 @@ class FeaturePreprocessor:
             'street_type': street_type,
         }
         
-        # Apply categorical encoding
         cat_encoded_dict = self._encode_categorical(categorical_features)
         feature_dict.update(cat_encoded_dict)
         
-        # One-hot encoded category features
         floor_category_vals = self._one_hot_encode('floor_category', floor_category, ['low', 'middle', 'high'])
         feature_dict.update(floor_category_vals)
         
@@ -239,11 +216,9 @@ class FeaturePreprocessor:
         metro_accessibility_vals = self._one_hot_encode('metro_accessibility', metro_accessibility, ['close', 'medium', 'far'])
         feature_dict.update(metro_accessibility_vals)
         
-        # TF-IDF features from description
         tfidf_features = self._process_description(description)
         feature_dict.update(tfidf_features)
         
-        # Create ordered array matching model's selected_features
         feature_array = np.array([
             feature_dict.get(feature_name, 0.0) 
             for feature_name in self.selected_features
@@ -256,8 +231,6 @@ class FeaturePreprocessor:
         result = {}
         for feature_name, value in categorical_dict.items():
             try:
-                # Target encoder maps category to encoded value
-                # Default to 0 if category unknown
                 encoded_value = getattr(self.target_encoder, f'{feature_name}_encoder', {}).get(value, 0.0)
                 result[feature_name] = float(encoded_value)
             except Exception as e:
@@ -266,7 +239,6 @@ class FeaturePreprocessor:
         return result
     
     def _one_hot_encode(self, prefix: str, value: str, categories: List[str]) -> Dict[str, int]:
-        """Create one-hot encoded features."""
         result = {}
         for category in categories:
             key = f"{prefix}_{category}"
@@ -278,20 +250,16 @@ class FeaturePreprocessor:
         result = {}
         try:
             if not description or len(description.strip()) == 0:
-                # Empty description - all TF-IDF features are 0
                 for i in range(30):
                     result[f'tfidf_{i}'] = 0.0
             else:
-                # Clean text: remove Russian stopwords
                 words = description.lower().split()
                 cleaned_words = [w for w in words if w not in self.russian_stopwords]
                 cleaned_text = ' '.join(cleaned_words)
                 
-                # Apply TF-IDF
                 tfidf_matrix = self.tfidf_vectorizer.transform([cleaned_text])
                 tfidf_array = tfidf_matrix.toarray()[0]
                 
-                # Store TF-IDF features
                 for i, value in enumerate(tfidf_array[:30]):
                     result[f'tfidf_{i}'] = float(value)
         except Exception as e:

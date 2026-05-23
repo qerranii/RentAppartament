@@ -1,4 +1,3 @@
-"""Эндпоинты аутентификации."""
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.database import get_db
@@ -16,10 +15,7 @@ async def register(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Регистрация нового пользователя.
-    
-    Создает новый аккаунт, хеширует пароль и возвращает access/refresh токены.
-    
+
     Args:
         user_data: Данные пользователя (email, password, full_name)
         db: Database session (внедряется автоматически)
@@ -46,10 +42,7 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Вход пользователя в систему.
-    
-    Проверяет email и пароль, возвращает JWT токены.
-    
+
     Args:
         email: Email пользователя
         password: Пароль (проверяется с bcrypt хешем)
@@ -77,10 +70,7 @@ async def refresh_token(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Обновление access токена.
-    
-    Использует refresh токен для получения нового access токена.
-    
+
     Args:
         token_request: Объект с refresh_token
         db: Database session (внедряется автоматически)
@@ -103,11 +93,6 @@ async def refresh_token(
 @router.post("/logout")
 async def logout():
     """
-    Выход из системы.
-    
-    На клиенте необходимо удалить токены из localStorage/cookies.
-    На backend токены не хранятся, поэтому простого подтверждения достаточно.
-    
     Returns:
         dict: Сообщение об успешном выходе
     """

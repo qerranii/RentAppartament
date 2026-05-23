@@ -1,4 +1,3 @@
-"""Image service."""
 import os
 import shutil
 from pathlib import Path
@@ -27,24 +26,20 @@ class ImageService:
         file_size: int
     ) -> Image:
         """Store image record in database."""
-        # Get MIME type
         mime_type = self._get_mime_type(file_name)
         
-        # Validate
         if not self._is_allowed_file(file_name):
             raise ValidationError(f"File type not allowed: {file_name}")
         
         if file_size > settings.MAX_FILE_SIZE:
             raise ValidationError(f"File size exceeds maximum: {file_size}")
         
-        # Verify prediction exists
         result = await self.db.execute(
             select(Prediction).where(Prediction.id == prediction_id)
         )
         if not result.scalar_one_or_none():
             raise NotFoundError("Prediction")
         
-        # Create image record
         image = Image(
             prediction_id=prediction_id,
             file_path=file_path,
@@ -76,7 +71,6 @@ class ImageService:
         if not image:
             raise NotFoundError("Image")
         
-        # Delete file if exists
         if os.path.exists(image.file_path):
             os.remove(image.file_path)
         
@@ -90,17 +84,14 @@ class ImageService:
         try:
             img = PILImage.open(file_path)
             
-            # Convert RGBA to RGB if needed
             if img.mode in ('RGBA', 'LA', 'P'):
                 rgb_img = PILImage.new('RGB', img.size, (255, 255, 255))
                 rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = rgb_img
             
-            # Resize if too large
             max_width, max_height = 1920, 1440
             img.thumbnail((max_width, max_height), PILImage.Resampling.LANCZOS)
             
-            # Save optimized
             img.save(file_path, quality=85, optimize=True)
             
             return file_path

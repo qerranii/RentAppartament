@@ -1,4 +1,3 @@
-"""Base repository with common CRUD operations."""
 from typing import TypeVar, Generic, Type, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func

@@ -1,4 +1,3 @@
-"""Celery configuration and workers."""
 from celery import Celery
 from app.core.config import settings
 
@@ -27,8 +26,7 @@ def process_image_task(self, image_path: str):
         from app.services.image_service import ImageService
         from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
         
-        # Note: This is a simplified version
-        # In production, use async context properly
+
         return {"status": "processed", "path": image_path}
     except Exception as e:
         return {"status": "error", "message": str(e)}

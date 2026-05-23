@@ -1,4 +1,3 @@
-"""Сервис аутентификации - бизнес-логика для управления пользователями."""
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user_repository import UserRepository
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, verify_token
@@ -9,16 +8,14 @@ from app.schemas import UserCreate
 
 class AuthService:
     """
-    Сервис для операций аутентификации.
-    
+
     Обрабатывает регистрацию, вход, валидацию токенов.
     Применяет бизнес-логику перед обращением к репозиторию.
     """
     
     def __init__(self, db: AsyncSession):
         """
-        Инициализация сервиса.
-        
+
         Args:
             db: Асинхронная сессия БД
         """
@@ -27,10 +24,7 @@ class AuthService:
     
     async def register(self, user_data: UserCreate) -> User:
         """
-        Регистрация нового пользователя.
-        
-        Проверяет что email не занят, хеширует пароль и создает аккаунт.
-        
+
         Args:
             user_data: Данные для регистрации
         
@@ -55,10 +49,7 @@ class AuthService:
     
     async def authenticate(self, email: str, password: str) -> User:
         """
-        Аутентификация пользователя.
-        
-        Проверяет пароль и активность аккаунта.
-        
+
         Args:
             email: Email пользователя
             password: Пароль в открытом виде
@@ -81,10 +72,7 @@ class AuthService:
     
     async def get_user_by_token(self, token: str) -> User:
         """
-        Получение пользователя по JWT токену.
-        
-        Декодирует токен и получает пользователя из БД.
-        
+
         Args:
             token: JWT токен
         
@@ -109,8 +97,7 @@ class AuthService:
     @staticmethod
     def create_tokens(user_id: int) -> dict:
         """
-        Создание access и refresh токенов для пользователя.
-        
+
         Args:
             user_id: ID пользователя
         
